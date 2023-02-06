@@ -1,0 +1,142 @@
+<body style="background-color: black;">
+<svg style="background-color: white; position: absolute; top: 50%; left: 50%; transform: translateY(-50%) translateX(-50%);"><path d="M 10 10 L 20 10 L 30 40" fill="transparent" stroke="black"></path>
+
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+
+
+</svg>
+
+
+<script>
+pointsX = [];
+pointsY = [];
+circles = document.querySelectorAll("svg > circle");
+constraints = []; /* index 1, index 2, length/2, fix = -1, 0, 1 */
+
+function Project(C, velocity){
+	var ind1 = C[0];
+	var ind2 = C[1];
+	var length = C[2];
+
+	var node1X = pointsX[ind1];
+	var node1Y = pointsY[ind1] + velocity;
+	
+	var node2X = pointsX[ind2];
+	var node2Y = pointsY[ind2] + velocity;
+
+	var avgX = (node1X + node2X)/2;
+	var avgY = (node1Y + node2Y)/2;
+	
+	var dirX = node2X - avgX; 
+	var dirY = node2Y - avgY;
+	
+	var dir = Math.sqrt(dirX * dirX + dirY * dirY);
+	var fac = (length / dir);
+	dirX = dirX * fac;
+	dirY = dirY * fac;
+	
+	pointsX[ind1] = avgX - dirX;
+	pointsX[ind2] = avgX + dirX;
+	
+	pointsY[ind1] = avgY - dirY;
+	pointsY[ind2] = avgY + dirY;
+}
+
+function ProjectFixed(ind1, ind2, length, velocity){
+	var node1X = pointsX[ind1];
+	var node1Y = pointsY[ind1];
+	
+	var node2X = pointsX[ind2];
+	var node2Y = pointsY[ind2] + velocity;
+	
+	var dirX = node2X - node1X; 
+	var dirY = node2Y - node1Y;
+	
+	var dir = Math.sqrt(dirX * dirX + dirY * dirY);
+	var fac = (length / dir);
+
+	dirX = dirX * fac;
+	dirY = dirY * fac;
+
+	pointsX[ind2] = node1X + dirX;
+	pointsY[ind2] = node1Y + dirY;
+}
+
+var chain = document.querySelector("svg > path");
+
+function Plot(){
+	var str = "";
+	for(var i=0; i< constraints.length; i++){
+		C = constraints[i];
+		var ind1 = C[0];
+		var ind2 = C[1];
+		var length = C[2];
+
+		var node1X = pointsX[ind1];
+		var node1Y = pointsY[ind1];
+		
+		var node2X = pointsX[ind2];
+		var node2Y = pointsY[ind2];
+		str += " M " + node1X + " " + node1Y + " L " + node2X + " " + node2Y;
+	}
+	
+	for(var i=0; i<circles.length; i++){
+		cir = circles[i];
+		cir.setAttribute("cx", pointsX[i]);
+		cir.setAttribute("cy", pointsY[i]);	
+	}
+	
+	chain.setAttribute("d", str.substring(1));
+}
+
+var v = 0; // vertical speed
+
+
+
+for(var i=0; i<15; i++){
+pointsX[i] = 15 + 18 * i;
+pointsY[i] = 40 + Math.random()*5;
+}
+
+for(var i=0; i<14; i++){
+constraints[i] = [i,i+1,10,0, 0];
+}
+
+constraints[0][3] = -1;
+constraints[13][3] = 1;
+
+setInterval(
+function(){
+	//constraints = constraints.sort((a, b) => 0.5 - Math.random());
+	for(var i=0; i<14 *4; i++){
+		C = constraints[i%14];
+		
+		if(C[3] == 0)
+			Project(C, v);
+		else if(C[3] == -1)
+			ProjectFixed(C[0], C[1], 2 * C[2], v);
+		else
+			ProjectFixed(C[1], C[0], 2 * C[2], v);
+	}
+	v += 0.01;
+	Plot();
+}, 10);
+
+</script>
+</body>
