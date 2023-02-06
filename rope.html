@@ -1,5 +1,18 @@
+<head>
+</head>
+
 <body style="background-color: black;">
-<svg style="background-color: white; position: absolute; top: 50%; left: 50%; transform: translateY(-50%) translateX(-50%);"><path d="M 10 10 L 20 10 L 30 40" fill="transparent" stroke="black"></path>
+<svg style="background-color: white; position: absolute; top: 50%; left: 50%; transform: translateY(-50%) translateX(-50%);">
+
+
+
+<path d="M 10 10 L 20 10 L 30 40" fill="transparent" stroke="black"></path>
+
+<circle cx="50" cy="50" r="2" stroke="none" fill="blue"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
 
 <circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
 <circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
@@ -11,13 +24,7 @@
 <circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
 <circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
 <circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
-<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
-
-<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
-<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
-<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
-<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
-<circle cx="50" cy="50" r="2" stroke="none" fill="red"/>
+<circle cx="50" cy="50" r="2" stroke="none" fill="blue"/>
 
 
 </svg>
@@ -29,16 +36,16 @@ pointsY = [];
 circles = document.querySelectorAll("svg > circle");
 constraints = []; /* index 1, index 2, length/2, fix = -1, 0, 1 */
 
-function Project(C, velocity){
+function Project(C){
 	var ind1 = C[0];
 	var ind2 = C[1];
 	var length = C[2];
 
 	var node1X = pointsX[ind1];
-	var node1Y = pointsY[ind1] + velocity;
+	var node1Y = pointsY[ind1];
 	
 	var node2X = pointsX[ind2];
-	var node2Y = pointsY[ind2] + velocity;
+	var node2Y = pointsY[ind2];
 
 	var avgX = (node1X + node2X)/2;
 	var avgY = (node1Y + node2Y)/2;
@@ -58,12 +65,12 @@ function Project(C, velocity){
 	pointsY[ind2] = avgY + dirY;
 }
 
-function ProjectFixed(ind1, ind2, length, velocity){
+function ProjectFixed(ind1, ind2, length){
 	var node1X = pointsX[ind1];
 	var node1Y = pointsY[ind1];
 	
 	var node2X = pointsX[ind2];
-	var node2Y = pointsY[ind2] + velocity;
+	var node2Y = pointsY[ind2];
 	
 	var dirX = node2X - node1X; 
 	var dirY = node2Y - node1Y;
@@ -112,6 +119,8 @@ var v = 0; // vertical speed
 for(var i=0; i<15; i++){
 pointsX[i] = 15 + 18 * i;
 pointsY[i] = 40 + Math.random()*5;
+velX[i] = 0;
+velY[i] = 0;
 }
 
 for(var i=0; i<14; i++){
@@ -121,22 +130,59 @@ constraints[i] = [i,i+1,10,0, 0];
 constraints[0][3] = -1;
 constraints[13][3] = 1;
 
+var md = false;
+var mx = 0;
+var my = 0;
+var lr = -1;
+
 setInterval(
 function(){
-	//constraints = constraints.sort((a, b) => 0.5 - Math.random());
-	for(var i=0; i<14 *4; i++){
+	constraints = constraints.sort((a, b) => 0.5 - Math.random());
+	for(var i=1; i<14; i++){
+		pointsY[i] += 3;
+	}
+	for(var i=0; i<14 *100; i++){
 		C = constraints[i%14];
 		
 		if(C[3] == 0)
-			Project(C, v);
+			Project(C);
 		else if(C[3] == -1)
-			ProjectFixed(C[0], C[1], 2 * C[2], v);
+			ProjectFixed(C[0], C[1], 2 * C[2]);
 		else
-			ProjectFixed(C[1], C[0], 2 * C[2], v);
+			ProjectFixed(C[1], C[0], 2 * C[2]);
 	}
-	v += 0.01;
+
 	Plot();
+	
+	if(md == true){
+	if(lr == -1){
+	pointsX[0] = mx;
+	pointsY[0] = my;
+	}
+	else{
+	pointsX[14] = mx;
+	pointsY[14] = my;	
+	}
+	}
 }, 10);
 
+document.querySelector("svg").addEventListener("mousedown",
+function(e){
+mx = e.offsetX;
+my = e.offsetY;
+lr = mx>150 ? 1 : -1;
+md = true;
+});
+
+document.querySelector("svg").addEventListener("mouseup",
+function(){
+md = false;
+});
+
+document.querySelector("svg").addEventListener("mousemove",
+function(e){
+mx = e.offsetX;
+my = e.offsetY;
+});
 </script>
 </body>
